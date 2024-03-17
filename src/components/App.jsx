@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import Feedback from './Feedback/Feedback'
 import Options from './Options/Options'
+import Description from './Description/Description';
+import Notification from './Notification/Notification';
 
 const initialFeedback = {
 	good: 0,
@@ -11,31 +13,35 @@ const initialFeedback = {
 
 function App() {
   const [feedback, setFeedback] = useState(() => {
-    const stringifiedFeedback = localStorage.getItem('feedbackValues');
+    const stringifiedFeedback = window.localStorage.getItem('feedbackValues');
     const parseFeedback = JSON.parse(stringifiedFeedback) ?? initialFeedback;
-    return parseFeedback;
+     if (parseFeedback !== null)  {
+       return parseFeedback;
+    }
+    return initialFeedback;
   });
 
   const updateFeedback = (feedbackType) => {
- setFeedback({ ...feedback, [feedbackType]: feedback[feedbackType] + 1 });
+    setFeedback({ ...feedback, [feedbackType]: feedback[feedbackType] + 1 });
 }
   const totalFeedback = Object.values(feedback).reduce((acc, current) => acc + current, 0);
   const positiveFeedback = Math.round(((feedback.good + feedback.neutral) / totalFeedback) * 100)
 
   const resetFeedback = ()=>{setFeedback(initialFeedback)}
 
+  
   useEffect(() => {
-    localStorage.setItem('feedbackValues', JSON.stringify(feedback))
-  });
+    window.localStorage.setItem('feedbackValues', JSON.stringify(feedback));
+  }, [feedback]);
+
   return (
     <>
-      <h1>Sip Happens Café</h1>
-      <p><b>Please leave your feedback about our service by selecting one of the options below.</b> </p>
+      <Description />
       
       <Options updateFeedback={updateFeedback} totalFeedback={totalFeedback} resetFeedback={ resetFeedback} />
      
-      {totalFeedback !== 0 ? <Feedback feedback={feedback} totalFeedback={totalFeedback} positiveFeedback={ positiveFeedback} /> : <p>No feedback yet</p>}
-    
+      {totalFeedback !== 0 ? <Feedback feedback={feedback} totalFeedback={totalFeedback} positiveFeedback={ positiveFeedback} /> :  <Notification />}
+   
     </>
   )
 }
